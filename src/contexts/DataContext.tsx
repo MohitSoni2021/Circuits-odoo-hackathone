@@ -36,7 +36,7 @@ interface DataContextType {
   items: ClothingItem[];
   swapRequests: SwapRequest[];
   loading: boolean;
-  addItem: (item: Omit<ClothingItem, '_id' | 'createdAt' | 'approved' | 'status'>) => Promise<boolean>;
+  addItem: (item: Omit<ClothingItem, '_id' | 'createdAt' | 'approved' | 'status'> & { images: File[] | string[] }) => Promise<boolean>;
   updateItem: (id: string, updates: Partial<ClothingItem>) => Promise<boolean>;
   deleteItem: (id: string) => Promise<boolean>;
   createSwapRequest: (request: Omit<SwapRequest, '_id' | 'createdAt'>) => Promise<boolean>;
@@ -106,13 +106,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, [firebaseUser]);
 
-  const addItem = async (newItem: Omit<ClothingItem, '_id' | 'createdAt' | 'approved' | 'status'>): Promise<boolean> => {
+  const addItem = async (newItem: Omit<ClothingItem, '_id' | 'createdAt' | 'approved' | 'status'> & { images: File[] | string[] }): Promise<boolean> => {
     try {
       const headers = await getAuthHeaders();
+      
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      
+      // Add all item data as JSON string
+      const itemData = {
+        title: newItem.title,
+        description: newItem.description,
+        category: newItem.category,
+        type: newItem.type,
+        size: newItem.size,
+        condition: newItem.condition,
+        tags: newItem.tags,
+        pointsRequired: newItem.pointsRequired,
+        uploaderId: newItem.uploaderId,
+        uploaderName: newItem.uploaderName
+      };
+      
+      formData.append('data', JSON.stringify(itemData));
+      
+      // Add images if they are File objects
+      if (newItem.images && newItem.images.length > 0) {
+        newItem.images.forEach((image) => {
+          if (typeof image === 'object' && 'name' in image && 'type' in image) {
+            formData.append('images', image as File);
+          }
+        });
+      }
+      
       const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.ITEMS), {
         method: 'POST',
-        headers,
-        body: JSON.stringify(newItem)
+        headers: {
+          'Authorization': headers.Authorization
+        },
+        body: formData
       });
 
       if (response.ok) {

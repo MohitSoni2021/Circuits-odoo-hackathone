@@ -2,9 +2,29 @@ import { Request, Response } from 'express';
 import ClothingItem, { IClothingItem } from '../models/ClothingItem';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
+import { uploadImage } from '../config/cloudinary';
 
 export const createItem = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ message: 'Authentication required' });
+      return;
+    }
+
+    // Parse item data from FormData
+    let itemData: any = {};
+    if (req.body.data) {
+      try {
+        itemData = JSON.parse(req.body.data);
+      } catch (error) {
+        res.status(400).json({ message: 'Invalid item data format' });
+        return;
+      }
+    } else {
+      // Fallback to direct body parsing for backward compatibility
+      itemData = req.body;
+    }
+
     const {
       title,
       description,
@@ -13,14 +33,24 @@ export const createItem = async (req: AuthRequest, res: Response): Promise<void>
       size,
       condition,
       tags,
-      images,
       pointsRequired
-    } = req.body;
+    } = itemData;
 
-    if (!req.user) {
-      res.status(401).json({ message: 'Authentication required' });
-      return;
+    // Handle image uploads if files are present
+    let imageUrls: string[] = [];
+    if (req.files && Array.isArray(req.files)) {
+      try {
+        const uploadPromises = (req.files as Express.Multer.File[]).map(file => uploadImage(file));
+        imageUrls = await Promise.all(uploadPromises);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        res.status(400).json({ message: 'Failed to upload images' });
+        return;
+      }
     }
+
+    // Use uploaded images or provided image URLs
+    const finalImages = imageUrls.length > 0 ? imageUrls : (itemData.images || []);
 
     const newItem = new ClothingItem({
       title,
@@ -29,8 +59,8 @@ export const createItem = async (req: AuthRequest, res: Response): Promise<void>
       type,
       size,
       condition,
-      tags,
-      images,
+      tags: Array.isArray(tags) ? tags : [],
+      images: finalImages,
       uploaderId: req.user._id,
       uploaderName: req.user.name,
       pointsRequired,
@@ -47,6 +77,32 @@ export const createItem = async (req: AuthRequest, res: Response): Promise<void>
   } catch (error) {
     console.error('Create item error:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// New endpoint for uploading images only
+export const uploadImages = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: 'Authentication required' });
+      return;
+    }
+
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      res.status(400).json({ message: 'No images provided' });
+      return;
+    }
+
+    const uploadPromises = (req.files as Express.Multer.File[]).map(file => uploadImage(file));
+    const imageUrls = await Promise.all(uploadPromises);
+
+    res.json({
+      message: 'Images uploaded successfully',
+      imageUrls
+    });
+  } catch (error) {
+    console.error('Upload images error:', error);
+    res.status(500).json({ message: 'Failed to upload images' });
   }
 };
 

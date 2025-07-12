@@ -4,10 +4,8 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-// Public routes
-router.post('/register', registerUser);
-
-// Protected routes
+// Protected routes - require authentication
+router.post('/register', authenticateToken, registerUser);
 router.get('/profile/:firebaseUid', authenticateToken, getUserProfile);
 router.put('/profile/:firebaseUid', authenticateToken, updateUserProfile);
 router.put('/points/:firebaseUid', authenticateToken, updateUserPoints);

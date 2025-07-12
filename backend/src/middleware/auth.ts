@@ -23,22 +23,31 @@ export const authenticateToken = async (
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    console.log('Auth middleware - Token received:', !!token);
+
     if (!token) {
+      console.log('Auth middleware - No token provided');
       res.status(401).json({ message: 'Access token required' });
       return;
     }
 
     // Verify Firebase token
+    console.log('Auth middleware - Verifying Firebase token...');
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
+    console.log('Auth middleware - Token verified, Firebase UID:', firebaseUid);
 
     // Find user in database
+    console.log('Auth middleware - Looking for user in database...');
     const user = await User.findOne({ firebaseUid }) as IUser | null;
     
     if (!user) {
+      console.log('Auth middleware - User not found in database for UID:', firebaseUid);
       res.status(404).json({ message: 'User not found' });
       return;
     }
+
+    console.log('Auth middleware - User found in database:', user.email);
 
     // Attach user to request
     req.user = {

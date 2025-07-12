@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
+import { getApiUrl, getApiHeaders, API_CONFIG } from '../config/api';
 import { Upload, X, Plus, Camera, Star } from 'lucide-react';
 
 const AddItem = () => {
   const navigate = useNavigate();
   const { addItem } = useData();
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -19,6 +20,7 @@ const AddItem = () => {
     pointsRequired: 30
   });
   const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   const categories = [
@@ -73,7 +75,11 @@ const AddItem = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
+      const newFiles = Array.from(files);
+      setImageFiles(prev => [...prev, ...newFiles]);
+      
+      // Create preview URLs
+      newFiles.forEach(file => {
         const reader = new FileReader();
         reader.onload = (event) => {
           if (event.target?.result) {
@@ -87,18 +93,19 @@ const AddItem = () => {
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !firebaseUser) return;
 
     setLoading(true);
 
     try {
       const filteredTags = formData.tags.filter(tag => tag.trim() !== '');
       
-      addItem({
+      const success = await addItem({
         title: formData.title,
         description: formData.description,
         category: formData.category,
@@ -106,16 +113,20 @@ const AddItem = () => {
         size: formData.size,
         condition: formData.condition,
         tags: filteredTags,
-        images: images.length > 0 ? images : ['https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg'],
+        images: imageFiles, // Pass the actual File objects
         uploaderId: user.id,
         uploaderName: user.name,
-        pointsRequired: formData.pointsRequired,
-        status: 'available'
+        pointsRequired: formData.pointsRequired
       });
 
-      navigate('/dashboard');
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        alert('Failed to add item. Please try again.');
+      }
     } catch (error) {
       console.error('Error adding item:', error);
+      alert('Failed to add item. Please try again.');
     }
 
     setLoading(false);
