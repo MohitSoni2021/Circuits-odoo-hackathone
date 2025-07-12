@@ -151,11 +151,9 @@ const Browse = () => {
           }>
             {sortedItems.map((item) => (
               <Link
-                key={item.id}
-                to={`/item/${item.id}`}
-                className={`group block backdrop-blur-md bg-white/20 rounded-2xl overflow-hidden border border-amber-200/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 ${
-                  viewMode === 'list' ? 'flex' : ''
-                }`}
+                key={item._id}
+                to={`/item/${item._id}`}
+                className={`group block backdrop-blur-md bg-white/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/30`}
               >
                 <div className={`${viewMode === 'list' ? 'w-48 h-48' : 'aspect-square'} overflow-hidden`}>
                   <img

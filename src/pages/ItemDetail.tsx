@@ -13,7 +13,7 @@ const ItemDetail = () => {
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [swapType, setSwapType] = useState<'points' | 'item'>('points');
 
-  const item = items.find(item => item.id === id);
+  const item = items.find(item => item._id === id);
 
   if (!item) {
     return (
@@ -49,7 +49,7 @@ const ItemDetail = () => {
       createSwapRequest({
         fromUserId: user.id,
         toUserId: item.uploaderId,
-        itemId: item.id,
+        itemId: item._id,
         pointsOffered: item.pointsRequired,
         status: 'pending'
       });

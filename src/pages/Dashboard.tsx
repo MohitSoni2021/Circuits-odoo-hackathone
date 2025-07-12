@@ -129,7 +129,7 @@ const Dashboard = () => {
                   <h3 className="text-xl font-bold text-amber-800 mb-4">Recent Activity</h3>
                   <div className="space-y-3">
                     {userSwapRequests.slice(0, 3).map((swap) => (
-                      <div key={swap.id} className="flex items-center justify-between p-4 bg-amber-50/30 rounded-xl border border-amber-200/30">
+                      <div key={swap._id} className="flex items-center justify-between p-4 bg-amber-50/30 rounded-xl border border-amber-200/30">
                         <div className="flex items-center space-x-3">
                           <div className={`w-3 h-3 rounded-full ${
                             swap.status === 'pending' ? 'bg-yellow-400' :
@@ -170,7 +170,7 @@ const Dashboard = () => {
                     <h4 className="text-lg font-semibold text-amber-700 mb-3">Pending Approval</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {pendingItems.map((item) => (
-                        <div key={item.id} className="backdrop-blur-sm bg-yellow-100/30 rounded-xl p-4 border border-yellow-200/50">
+                        <div key={item._id} className="backdrop-blur-sm bg-yellow-100/30 rounded-xl p-4 border border-yellow-200/50">
                           <div className="aspect-square bg-amber-100 rounded-lg mb-3 overflow-hidden">
                             <img
                               src={item.images[0] || '/placeholder-image.jpg'}
@@ -192,7 +192,7 @@ const Dashboard = () => {
                   {approvedItems.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {approvedItems.map((item) => (
-                        <div key={item.id} className="backdrop-blur-sm bg-white/30 rounded-xl overflow-hidden border border-amber-200/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div key={item._id} className="backdrop-blur-sm bg-white/30 rounded-xl overflow-hidden border border-amber-200/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                           <div className="aspect-square overflow-hidden">
                             <img
                               src={item.images[0] || '/placeholder-image.jpg'}
@@ -210,14 +210,14 @@ const Dashboard = () => {
                             </div>
                             <div className="flex items-center space-x-2">
                               <Link
-                                to={`/item/${item.id}`}
+                                to={`/item/${item._id}`}
                                 className="flex-1 px-3 py-2 bg-amber-100/50 text-amber-800 rounded-lg text-sm font-medium hover:bg-amber-200/50 transition-colors duration-300 flex items-center justify-center space-x-1"
                               >
                                 <Eye className="h-4 w-4" />
                                 <span>View</span>
                               </Link>
                               <button
-                                onClick={() => deleteItem(item.id)}
+                                onClick={() => deleteItem(item._id)}
                                 className="px-3 py-2 bg-red-100/50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200/50 transition-colors duration-300"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -251,7 +251,7 @@ const Dashboard = () => {
                 {userSwapRequests.length > 0 ? (
                   <div className="space-y-4">
                     {userSwapRequests.map((swap) => (
-                      <div key={swap.id} className="backdrop-blur-sm bg-white/30 rounded-xl p-6 border border-amber-200/30 shadow-lg">
+                      <div key={swap._id} className="backdrop-blur-sm bg-white/30 rounded-xl p-6 border border-amber-200/30 shadow-lg">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             <div className={`w-4 h-4 rounded-full ${

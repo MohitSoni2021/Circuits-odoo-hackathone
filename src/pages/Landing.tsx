@@ -180,9 +180,9 @@ const Landing = () => {
                   style={{ transform: `translateX(-${currentSlide * (100 / 3)}%)` }}
                 >
                   {featuredItems.map((item) => (
-                    <div key={item.id} className="w-1/3 flex-shrink-0 px-4">
+                    <div key={item._id} className="w-1/3 flex-shrink-0 px-4">
                       <Link 
-                        to={`/item/${item.id}`}
+                        to={`/item/${item._id}`}
                         className="group block backdrop-blur-md bg-white/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/30"
                       >
                         <div className="aspect-square overflow-hidden relative">
